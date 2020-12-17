@@ -1,5 +1,6 @@
-from urllib.parse import urlparse
-from typing import Union, List
+from urllib.parse import urlparse, ParseResult
+from typing import Union, List, Dict
+from types import SimpleNamespace
 import abc
 import re
 
@@ -88,3 +89,43 @@ class MetaRegex(type, abc.ABC):
             if k in cls.fields and isinstance(v, str):
                 dict[k] = re.compile(v)
         return super().__new__(cls, name, bases, dict)
+
+
+def make_url(
+    scheme: str   = 'https',
+    netloc: str   = '',
+    path: str     = '',
+    params: str   = '',
+    query: Dict   = {},
+    fragment: str = '',
+) -> ParseResult:
+    return ParseResult(scheme, netloc, path, params, query, fragment)
+
+
+# https://gist.github.com/sshay77/4b1f6616a7afabc1ce2a
+class GoogleSearchQuery(SimpleNamespace):
+    '''Google Search URL params.
+
+    Keywords:
+        aq:       Google Suggest Tracking (chosen suggestion)
+        as_q:     When searching within results, the query is added as_q
+        client:   Browser name
+        oi:       Universal search: Group name
+        oq:       What you typed before you select a suggestion
+        pq:       Previous query
+        resnum:   Universal search: number of a result within the group
+        sa:       Google SERPs navigation behavior tracking
+        sclient:  Browser name
+        source:   Source of the query
+        sourceid: Source of the query
+        swrnum:   The number of results the initial query returned
+    '''
+    deletable = {
+        # tracking params
+        'aq', 'as_q', 'client', 'oi', 'oq', 'pq', 'resnum', 'sa',
+        'sclient', 'source', 'sourceid', 'swrnnum',
+    }
+
+    @property
+    def clean(self):
+        return {k: v for k, v in self.__dict__ if k not in self.deletable}

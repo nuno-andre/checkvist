@@ -207,9 +207,9 @@ class Client(HttpParsedClient):
             # TODO
             due_date:   Due for the task, in `smart syntax`_ format.
             position:   1-based position of the task.
-            parse:      If ``True``, recognize ``^due`` and ``#tags`` syntax
-                        in the updated item.
-            with_notes: If ``True``, the result will contain information
+            parse:      If :data:`True`, recognize ``^due`` and ``#tags``
+                        syntax in the updated item.
+            with_notes: If :data:`True`, the result will contain information
                         about notes added to the tasks.
 
         .. _smart syntax:
@@ -262,14 +262,13 @@ class Client(HttpParsedClient):
         end_date:     Optional[Date] = None,
         period_count: int = 1,
     ) -> Task:
-        '''
-        Set repeating task information.
+        '''Set repeating task information.
 
         Args:
             period:       One of ``daily|weekly|monthly|yearly``.
             start_date:   The start date for the first repeating due.
             end_date:     The end date for the repeating due (optional).
-            period_count: It is '5' in repeat every 5 weeks (default 1).
+            period_count: It is '5' in repeat every 5 weeks (default ``1``).
         '''
         data = dict(period=Period(period).value, period_count=period_count,
                     start_date=start_date, end_date=end_date)

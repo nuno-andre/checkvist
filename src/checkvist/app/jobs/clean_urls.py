@@ -2,7 +2,7 @@
 Clean some URLs.
 """
 from urllib.parse import urlparse, urlunparse, urlencode, parse_qs, ParseResult
-from checkvist.app.models import Content, Link, get_site_class
+from checkvist.app.models import Content, Link, get_site_class, make_url
 from checkvist.lib import Task
 import logging
 
@@ -18,7 +18,7 @@ class CleanUrl(Link):
 
     @property
     def url(self) -> str:
-        url = self._url + (None,) * (6 - len(self._url))
+        url = self._url + ('',) * (6 - len(self._url))
         return urlunparse(url)
 
     @url.setter
@@ -31,7 +31,7 @@ class Google(CleanUrl):
     def url(self, url):
         # remove all params except the query itself
         query = {'q': self.query['q'][0]}
-        self._url = url._replace(query=urlencode(query))
+        self._url = make_url(netloc='google.com', fragment=urlencode(query))
 
 
 class Reddit(CleanUrl):
@@ -40,8 +40,9 @@ class Reddit(CleanUrl):
         # removes article's title from url
         path = list(filter(None, url.path.split('/')))
         try:
-            if path[-3] == 'comments' and self.check.fullmatch(path[-2]):
-                url = url._replace(path='/'.join(path[:-1]))
+            # if path[-3] == 'comments' and self.check.fullmatch(path[-2]):
+            if path[-3] == 'comments':
+                url = url._replace(path='/'.join(path[:-1]), query=None)
         except IndexError:
             pass
         self._url = url
@@ -53,7 +54,12 @@ class StackExchange(CleanUrl):
         # remove question title from url
         path = url.path.split('/')
         if not path[-1].isnumeric():
+            # question
             url = url._replace(path='/'.join(path[:-1]))
+        else:
+            # answer
+            path = f'/a/{path[-1]}'
+            url = url._replace(path=path, fragment=None)
         self._url = url
 
 
@@ -61,13 +67,16 @@ class YouTube(CleanUrl):
     @CleanUrl.url.setter
     def url(self, url):
         if list(self.query.keys()) == ['v']:
-            url = ('https', 'youtu.be', self.query['v'])
+            url = ('https', 'youtu.be', self.query['v'][0])
         self._url = url
 
 
-# TODO: add domains as attr of the class
+# TODO: add domains as an attr of the class
+#       and another attr for excluded subdomains
 DOMAINS = {
     'www.google.com': Google,
+    'googl.com': Google,
+    'gogle.com': Google,
     'reddit.com': Reddit,
     'stackexchange.com': StackExchange,
     'mathoverflow.net': StackExchange,
@@ -86,6 +95,7 @@ def main(task: Task) -> str:
         link = cont.find_link()
         cls  = get_site_class(link.url, DOMAINS, SUBDOMAINS)
 
+        # TODO: move checks to class
         if cls is Google:
             # TODO: retrieve canonical URL
             if 'www.google.com/amp/s/' in link.url:

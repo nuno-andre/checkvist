@@ -99,7 +99,7 @@ class HttpParsedClient(HttpClient, abc.ABC):
         *, params: Optional[Dict] = None,
         data:      Optional[Dict] = None,
     ) -> Any:
-        # FIXME json
+        # FIXME json -> read request content-type
         response = super().request(method, path, params=params, json=data)
         content  = make_content(response.headers)
 

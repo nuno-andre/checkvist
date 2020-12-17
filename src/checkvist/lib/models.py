@@ -14,7 +14,7 @@ class Checklist(SimpleNamespace):
 
 
 class Task(SimpleNamespace):
-    '''A :class:`Task` is a :class:`Checklist` item.
+    '''A :class:`~lib.Task` is a :class:`~lib.Checklist` item.
     '''
     pass
 
@@ -69,19 +69,19 @@ def _make_resource(
 
 
 def make_checklist(obj: ApiResult) -> Union[Checklist, List[Checklist]]:
-    ''':class:`lib.Checklist` factory.
+    ''':class:`~lib.Checklist` factory.
     '''
     return _make_resource(obj, Checklist)
 
 
 def make_task(obj: ApiResult) -> Union[Task, List[Task]]:
-    ''':class:`lib.Task` factory.
+    ''':class:`~lib.Task` factory.
     '''
     return _make_resource(obj, Task)
 
 
 def make_note(obj: ApiResult) -> Union[Note, List[Note]]:
-    ''':class:`lib.Note` factory.
+    ''':class:`~lib.Note` factory.
     '''
     return _make_resource(obj, Note)
 # endregion
